@@ -6,6 +6,7 @@ onready var camera = utils.get_main_node().get_node("camera")
 
 func _ready():
 	set_process(true)
+	add_to_group(game.GROUP_PIPES)		# 加入pipes组，用做碰撞检测时的碰撞物体识别
 	pass
 
 func _process(delta):

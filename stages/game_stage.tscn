@@ -1,10 +1,93 @@
-[gd_scene load_steps=6 format=1]
+[gd_scene load_steps=13 format=1]
 
 [ext_resource path="res://scenes/bird.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scripts/camera.gd" type="Script" id=2]
 [ext_resource path="res://scenes/spawner_ground.tscn" type="PackedScene" id=3]
 [ext_resource path="res://scenes/background.tscn" type="PackedScene" id=4]
 [ext_resource path="res://scenes/spawner_pipe.tscn" type="PackedScene" id=5]
+[ext_resource path="res://sprites/instructions.png" type="Texture" id=6]
+[ext_resource path="res://fonts/font_score.ttf" type="DynamicFontData" id=7]
+[ext_resource path="res://sprites/number_large_0.png" type="Texture" id=8]
+
+[sub_resource type="GDScript" id=1]
+
+resource/name = "btn_instructions"
+script/source = "# btn_instructions (built-in)
+extends TextureButton
+
+func _ready():
+	connect(\"pressed\", self, \"_on_pressed\")
+	grab_focus()		# 让空格和回车也能开始游戏
+	pass
+
+func _on_pressed():
+	var bird = utils.get_main_node().get_node(\"bird\")
+	if bird:
+		bird.set_state(bird.STATE_FLAPPING)
+	
+	self.hide()
+	pass"
+
+[sub_resource type="DynamicFont" id=2]
+
+font/size = 14
+font/use_mipmaps = false
+font/use_filter = false
+font/font = ExtResource( 7 )
+
+[sub_resource type="GDScript" id=3]
+
+resource/name = "lbl_score.gd"
+script/source = "# lbl_score.gd
+extends Label
+
+func _ready():
+	game.connect(\"score_current_changed\", self, \"_on_score_current_changed\")
+	set_text(str(game.score_current))
+	pass
+
+func _on_score_current_changed():
+	set_text(str(game.score_current))
+	pass"
+
+[sub_resource type="GDScript" id=4]
+
+resource/name = "hbox_score.gd"
+script/source = "# hbox_score.gd
+extends HBoxContainer
+
+const sprite_numbers = [
+	preload(\"res://sprites/number_large_0.png\"),
+	preload(\"res://sprites/number_large_1.png\"),
+	preload(\"res://sprites/number_large_2.png\"),
+	preload(\"res://sprites/number_large_3.png\"),
+	preload(\"res://sprites/number_large_4.png\"),
+	preload(\"res://sprites/number_large_5.png\"),
+	preload(\"res://sprites/number_large_6.png\"),
+	preload(\"res://sprites/number_large_7.png\"),
+	preload(\"res://sprites/number_large_8.png\"),
+	preload(\"res://sprites/number_large_9.png\")
+]
+
+func _ready():
+	game.connect(\"score_current_changed\", self, \"_on_score_current_changed\")
+	set_number(game.score_current)
+	pass
+
+func _on_score_current_changed():
+	set_number(game.score_current)
+	pass
+
+func set_number(number):
+	# 先清空变化前的分数文字
+	for child in get_children():
+		child.queue_free()
+	
+	for digit in utils.get_digits(number):
+		var texture_frame = TextureFrame.new()
+		texture_frame.set_texture(sprite_numbers[digit])
+		add_child(texture_frame)
+	pass"
 
 [node name="world" type="Node"]
 
@@ -38,5 +121,89 @@ script/script = ExtResource( 2 )
 [node name="background" parent="." instance=ExtResource( 4 )]
 
 [node name="spawner_pipe" parent="." instance=ExtResource( 5 )]
+
+[node name="hud" type="CanvasLayer" parent="."]
+
+layer = 1
+offset = Vector2( 0, 0 )
+rotation = 0.0
+scale = Vector2( 1, 1 )
+
+[node name="btn_instructions" type="TextureButton" parent="hud"]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 144.0
+margin/bottom = 256.0
+toggle_mode = false
+click_on_press = true
+enabled_focus_mode = 2
+shortcut = null
+params/resize_mode = 0
+params/stretch_mode = 0
+script/script = SubResource( 1 )
+
+[node name="texture" type="TextureFrame" parent="hud/btn_instructions"]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 44.0
+margin/top = 104.0
+margin/right = 101.0
+margin/bottom = 153.0
+texture = ExtResource( 6 )
+stretch_mode = 0
+
+[node name="lbl_score" type="Label" parent="hud"]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 0
+margin/left = 0.0
+margin/top = 10.0
+margin/right = 144.0
+margin/bottom = 24.0
+custom_fonts/font = SubResource( 2 )
+custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
+text = "0"
+align = 1
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+script/script = SubResource( 3 )
+
+[node name="hbox_score" type="HBoxContainer" parent="hud"]
+
+focus/ignore_mouse = false
+focus/stop_mouse = false
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 10.0
+margin/right = 144.0
+margin/bottom = 28.0
+custom_constants/separation = 2
+alignment = 1
+script/script = SubResource( 4 )
+
+[node name="tex_number_0" type="TextureFrame" parent="hud/hbox_score"]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 66.0
+margin/top = 0.0
+margin/right = 78.0
+margin/bottom = 18.0
+texture = ExtResource( 8 )
+stretch_mode = 0
 
 
