@@ -14,6 +14,7 @@ signal state_changed
 
 func _ready():
 	set_process_input(true)		# 打开输入动作监听，会监听任何事件，如鼠标的点击、移动
+	set_process_unhandled_input(true)
 	set_fixed_process(true)		# 打开update，每帧调用一次
 	
 	add_to_group(game.GROUP_BIRDS)
@@ -27,6 +28,12 @@ func _fixed_process(delta):
 	
 func _input(event):
 	state.input(event)
+	pass
+
+# 除了空格与F的其他输入
+func _unhandled_input(event):
+	if state.has_method("unhandled_input"):
+		state.unhandled_input(event)
 	pass
 
 # 碰撞时调用，other为与鸟碰撞的物体
@@ -128,6 +135,15 @@ class FlappingState:
 	func input(event):
 		if event.is_action_pressed('flap'):
 			flap()
+		pass
+		
+	func unhandled_input(event):
+		# 确定是鼠标点击事件
+		if event.type != InputEvent.MOUSE_BUTTON or !event.is_pressed() or event.is_echo():
+			return
+		if event.button_index == BUTTON_LEFT:
+			flap()
+			pass
 		pass
 		
 	# 处理碰撞
